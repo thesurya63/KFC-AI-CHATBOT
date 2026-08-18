@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build SQLite database (offline)
+        run: |
+          python database/create_db.py
+          python database/load_data.py
+
+      - name: Run tests
+        # Chroma and Ollama-dependent tests skip automatically here; they
+        # require a local Ollama server and embedding build (rag/load_chroma.py).
+        run: python -m pytest -q

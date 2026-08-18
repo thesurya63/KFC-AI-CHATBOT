@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KFC Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background: #ffffff;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* KFC official red/white striped accent bar */
+        .kfc-stripes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: repeating-linear-gradient(45deg,
+                    #E4002B 0px,
+                    #E4002B 20px,
+                    #ffffff 20px,
+                    #ffffff 40px);
+            z-index: 100;
+        }
+
+        .chat-container {
+            width: 440px;
+            max-width: 95vw;
+            height: 660px;
+            max-height: 92vh;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e8e8e8;
+        }
+
+        .header {
+            background: #ffffff;
+            color: #202124;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 2px solid #E4002B;
+        }
+
+        .header .logo {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            font-weight: 900;
+            font-size: 28px;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+
+        .header .logo .k {
+            color: #E4002B;
+        }
+
+        .header .logo .fc {
+            color: #202124;
+        }
+
+        .header .logo .colonel {
+            width: 40px;
+            height: 40px;
+            background: #E4002B;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 900;
+            margin-left: 6px;
+        }
+
+        .header .title-block h1 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #202124;
+        }
+
+        .header .title-block p {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background: #fafafa;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .msg {
+            max-width: 82%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .bot {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-top-left-radius: 4px;
+            align-self: flex-start;
+            color: #202124;
+        }
+
+        .user {
+            background: #E4002B;
+            color: #ffffff;
+            border-top-right-radius: 4px;
+            align-self: flex-end;
+        }
+
+        .tag {
+            font-size: 10px;
+            color: #999;
+            margin-top: 6px;
+        }
+
+        .input-area {
+            padding: 12px;
+            background: #ffffff;
+            border-top: 1px solid #e8e8e8;
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 12px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none;
+            color: #202124;
+        }
+
+        .input-area input:focus {
+            border-color: #E4002B;
+        }
+
+        .input-area button {
+            background: #E4002B;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .input-area button:hover {
+            background: #c40025;
+        }
+
+        .input-area button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .typing {
+            color: #888;
+            font-style: italic;
+            font-size: 13px;
+        }
+
+        /* KFC-style footer strip */
+        .footer-strip {
+            background: #202124;
+            color: #fff;
+            text-align: center;
+            font-size: 10px;
+            padding: 6px;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="kfc-stripes"></div>
+    <div class="chat-container">
+        <div class="header">
+            <div class="logo">
+                <span class="k">K</span><span class="fc">FC</span>
+                <span class="colonel">👨‍🍳</span>
+            </div>
+            <div class="title-block">
+                <h1>KFC Assistant</h1>
+                <p>Menu • Nutrition • Offers • Orders</p>
+            </div>
+        </div>
+        <div class="messages" id="messages">
+            <div class="msg bot">Hi there! 👋 I'm your KFC assistant. Ask me about our menu, nutrition facts, current
+                offers, or track a synthetic order (e.g. KFC-ORDER-0001).</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="input" placeholder="Type your question..." autocomplete="off">
+            <button id="send" onclick="sendMessage()">➤</button>
+        </div>
+        <div class="footer-strip">KFC • LOCAL DEMO CHATBOT • SYNTHETIC DATA</div>
+    </div>
+    <script>
+        const messages = document.getElementById('messages');
+        const input = document.getElementById('input');
+        const sendBtn = document.getElementById('send');
+
+        function addMessage(text, type, tag) {
+            const div = document.createElement('div');
+            div.className = 'msg ' + type;
+            div.textContent = text;
+            const meta = document.createElement('div');
+            meta.className = 'tag';
+            meta.textContent = tag || '';
+            div.appendChild(meta);
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const text = input.value.trim();
+            if (!text) return;
+            addMessage(text, 'user');
+            input.value = '';
+            sendBtn.disabled = true;
+            const typing = document.createElement('div');
+            typing.className = 'typing';
+            typing.textContent = 'KFC Assistant is typing...';
+            messages.appendChild(typing);
+            messages.scrollTop = messages.scrollHeight;
+            try {
+                const res = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                const data = await res.json();
+                typing.remove();
+                addMessage(data.answer, 'bot', 'route: ' + data.route);
+            } catch (err) {
+                typing.remove();
+                addMessage('Sorry, I could not reach the assistant. Is the server running?', 'bot');
+            }
+            sendBtn.disabled = false;
+        }
+
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+    </script>
+</body>
+
+</html>

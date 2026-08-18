@@ -1,0 +1,24 @@
+# Normalize line endings per file type
+* text=auto
+
+# Source files
+*.py text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.sql text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.example text eol=lf
+
+# Binary / generated data (never diff)
+*.xlsx binary
+*.pdf binary
+*.db binary
+*.png binary
+*.svg binary
+*.jpg binary
+*.zip binary

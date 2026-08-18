@@ -1,0 +1,10 @@
+﻿# Local generated databases
+chroma_db/*
+sqlite_db/*.db
+sqlite_db/*.db-wal
+sqlite_db/*.db-shm
+__pycache__/
+.pytest_cache/
+.env
+*.log
+kfc_chatbot_deploy.zip
