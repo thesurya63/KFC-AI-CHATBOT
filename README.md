@@ -72,6 +72,9 @@ uvicorn api.main:app --host 127.0.0.1 --port 8000
 - Readiness (SQLite + Chroma + Ollama + models): http://127.0.0.1:8000/readiness
 - Chat API: `POST /chat` with JSON `{"message": "..."}`
 
+For full details on architecture, data flow, and usage, see
+[`docs/PROJECT_DOCUMENTATION.md`](docs/PROJECT_DOCUMENTATION.md).
+
 CORS origins are restricted to the values in `CORS_ORIGINS` (see `.env`).
 Change them for any other deployment.
 
