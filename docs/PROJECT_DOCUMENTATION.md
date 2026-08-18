@@ -72,36 +72,99 @@ answer + intent + route + grounded flag + limitations
 
 ## 3. Repository layout
 
+The full file structure of the repository, as cloned from GitHub:
+
 ```
-.
-├── config.py                  # central settings (models, paths, host, port, CORS)
-├── agent/                     # LangGraph agent
-│   ├── state.py               #   typed ChatState + Intent enum
-│   ├── router.py              #   deterministic intent classification + entities
-│   ├── evidence.py            #   evidence grounding gate
-│   ├── responder.py           #   Ollama grounded answer generation
-│   ├── graph.py               #   LangGraph nodes + orchestration
-│   └── tools/
-│       ├── sqlite_tools.py    #   SQLite lookups
-│       └── chroma_retriever.py#   Chroma retrieval
-├── api/
-│   ├── main.py                # FastAPI app (health/readiness/chat)
-│   └── static/index.html      # local chat web UI
-├── database/                  # SQLite schema + loaders + verification
-├── rag/                       # document building + Chroma ingestion
-├── data_split/                # canonical source workbooks (two lanes)
-│   ├── SQLITE_STRUCTURED/     #   exact/typed records
-│   ├── CHROMA_EMBEDDINGS/     #   natural-language search documents
-│   └── DATA_ROUTING_MANIFEST.md
-├── sqlite_db/                 # generated database (gitignored) + schema.sql
-├── chroma_db/                 # generated Chroma collection (gitignored)
-├── tests/                     # pytest suite
-├── prepare_package.py         # deployment packaging (checkpoints DB, zip)
-└── .github/workflows/ci.yml   # CI (builds SQLite, runs pytest)
+KFC-AI-CHATBOT/
+├── .env.example                      # template for runtime configuration (copy to .env)
+├── .gitattributes                    # line-ending + binary file rules
+├── .gitignore                        # excludes DBs, caches, .env, logs
+├── .github/
+│   └── workflows/
+│       └── ci.yml                    # CI: builds SQLite + runs pytest
+├── README.md                         # quick start
+├── LICENSE                           # MIT license
+├── CHANGELOG.md                      # release history
+├── CONTRIBUTING.md                   # development guide + PR checklist
+├── AGENTS.md                         # project rules & data-integrity rules
+├── requirements.txt                  # pinned Python dependencies
+├── config.py                         # central settings (models, paths, host, CORS)
+├── conftest.py                       # pytest root configuration
+├── prepare_package.py                # deployment packaging (checkpoints DB, zip)
+│
+├── agent/                            # LangGraph agent (core logic)
+│   ├── state.py                      #   typed ChatState + Intent enum
+│   ├── router.py                     #   intent classification + entity extraction
+│   ├── evidence.py                   #   evidence grounding gate
+│   ├── responder.py                  #   Ollama grounded answer generation
+│   ├── graph.py                      #   graph nodes + orchestration
+│   ├── test_agent.py                 #   standalone smoke test script
+│   └── tools/                        #   lookup tools used by the agent
+│       ├── __init__.py
+│       ├── sqlite_tools.py           #   SQLite lookups
+│       └── chroma_retriever.py       #   Chroma retrieval
+│
+├── api/                              # FastAPI service
+│   ├── main.py                       #   /health /readiness /chat endpoints
+│   └── static/
+│       └── index.html                #   local chat web UI
+│
+├── database/                         # SQLite data layer
+│   ├── create_db.py                  #   create tables from schema.sql
+│   ├── load_data.py                  #   load master workbooks into SQLite
+│   └── verify_db.py                  #   verify counts and sample rows
+│
+├── rag/                              # Chroma document ingestion
+│   ├── documents.py                  #   RAG + legal document parsing
+│   ├── load_chroma.py                #   embed and upsert documents
+│   ├── verify_chroma.py              #   verify the collection
+│   └── inspect_chroma_data.py        #   inspect source workbook structure
+│
+├── data_split/                       # canonical source data (committed)
+│   ├── DATA_ROUTING_MANIFEST.md      #   explains the two data lanes
+│   ├── SQLITE_STRUCTURED/            #   exact/typed records for SQLite
+│   │   ├── 01_Menu_Master.xlsx
+│   │   ├── 02_Nutrition_Master.xlsx
+│   │   ├── 03_Offers_Legal_Master.xlsx
+│   │   └── 04_Orders_Master.xlsx
+│   └── CHROMA_EMBEDDINGS/            #   search documents for Chroma
+│       ├── 01_Menu_Master.xlsx
+│       ├── 02_Nutrition_Master.xlsx
+│       ├── 03_Offers_Legal_Master.xlsx
+│       ├── 05_RAG_QA_Master.xlsx
+│       ├── kfc_india_2026_reference_menu.pdf
+│       ├── kfc_legal_footer_capture_2026-08-12.md
+│       └── kfc_offers_and_legal_capture_2026-08-12.txt
+│
+├── sqlite_db/                        # generated database (gitignored)
+│   └── schema.sql                    #   schema definition (committed)
+│
+├── chroma_db/                        # generated Chroma collection (gitignored)
+│
+├── tests/                            # pytest suite
+│   ├── helpers.py                    #   shared test helpers / Ollama skip guard
+│   ├── test_config.py                #   configuration consistency
+│   ├── test_router.py                #   intent classification
+│   ├── test_evidence.py              #   grounding gate
+│   ├── test_graph_nodes.py           #   graph node behavior
+│   ├── test_sqlite.py                #   SQLite integrity + content
+│   ├── test_chroma.py                #   Chroma coverage (incl. legal)
+│   ├── test_api.py                   #   API health/readiness/validation
+│   ├── test_agent_endtoend.py        #   end-to-end agent grounding
+│   └── test_startup.py               #   startup from a non-root directory
+│
+└── docs/
+    └── PROJECT_DOCUMENTATION.md      # this documentation
 ```
 
-Generated databases (`sqlite_db/*.db`, `chroma_db/`) are intentionally **not**
-committed. A fresh clone rebuilds them from the committed source workbooks.
+### Committed vs generated
+
+- **Committed** — all source code, `data_split/` workbooks, `sqlite_db/schema.sql`,
+  documentation, and CI. A fresh clone can rebuild the entire data foundation.
+- **Not committed (gitignored)** — generated artifacts: `sqlite_db/*.db`
+  (with `-wal`/`-shm`), `chroma_db/`, `.env`, `__pycache__/`, `.pytest_cache/`,
+  `*.log`, and `kfc_chatbot_deploy.zip`. These are produced by the scripts in
+  [`database/`](#6-setup-and-run) and [`rag/`](#6-setup-and-run).
 
 ---
 
